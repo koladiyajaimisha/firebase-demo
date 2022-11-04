@@ -1,10 +1,12 @@
 import { signInWithEmailAndPassword } from "firebase/auth";
+import { collection, getDocs, query, where } from "firebase/firestore";
 import React, { useState } from "react";
 import { useDispatch } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
 import { toast, ToastContainer } from "react-toastify";
-import { auth } from "../../firebase";
-import { setIsAuthenticated } from "./redux/actions";
+import { auth, db } from "../../firebase";
+import { useAppDispatch } from "../../state/store";
+import { setAuthUser, setIsAuthenticated } from "./redux/actions";
 
 interface LoginData {
   email: string;
@@ -18,7 +20,7 @@ export default function Login() {
   });
 
   const navigate = useNavigate();
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
 
   const login = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
@@ -26,7 +28,8 @@ export default function Login() {
     if (loginData.email && loginData.password) {
       // Create a new user with email and password using firebase
       signInWithEmailAndPassword(auth, loginData.email, loginData.password)
-        .then((res) => {
+        .then(async (res) => {
+          dispatch(setAuthUser({ uid: res.user.uid }));
           localStorage.setItem("token", res.user.refreshToken);
           dispatch(setIsAuthenticated(true));
           navigate("/technologies");
@@ -39,7 +42,7 @@ export default function Login() {
           } else {
             toast.error(error.message);
           }
-          window.location.reload()
+          window.location.reload();
         });
     }
 

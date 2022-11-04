@@ -1,8 +1,16 @@
-import { addDoc, collection, getDocs } from "firebase/firestore";
+import {
+  addDoc,
+  collection,
+  doc,
+  getDocs,
+  updateDoc,
+} from "firebase/firestore";
 import React, { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router";
 import Select, { MultiValue } from "react-select";
 import { toast, ToastContainer } from "react-toastify";
 import { auth, db } from "../../../firebase";
+import { useAppSelector } from "../../../state/store";
 import { IProjectData } from "../interface";
 
 const members = [{ value: "testuser3@test.com", label: "testuser3@test.com" }];
@@ -30,7 +38,21 @@ const initialProjectData = {
 const AddProjects = () => {
   const [projectData, setProjectData] =
     useState<IProjectData>(initialProjectData);
-  console.log("projectData", projectData);
+  const [authUser, projectsList] = useAppSelector((state) => [
+    state.auth.authUser,
+    state.projects.projectsList,
+  ]);
+  const navigate = useNavigate();
+  const params = useParams();
+
+  useEffect(() => {
+    if (params.id && projectsList.length) {
+      const selectedProject = projectsList.find(
+        (p: IProjectData) => p.id === params.id
+      );
+      setProjectData({ ...selectedProject });
+    }
+  }, [projectsList]);
 
   const handleInputChange = (
     e: React.ChangeEvent<
@@ -51,16 +73,28 @@ const AddProjects = () => {
 
   const addProject = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
-    const data = await addDoc(collection(db, "projects"), projectData);
-    if (data) {
-      toast.success("Project added successfully!");
+    if (projectData.id) {
+      const techDoc = doc(db, "projects", projectData.id);
+      await updateDoc(techDoc, { ...projectData });
+      toast.success("Project updated successfully!");
+    } else {
+      const data = await addDoc(collection(db, "projects"), {
+        ...projectData,
+        createdBy: authUser && authUser.email,
+      });
+      if (data) {
+        toast.success("Project added successfully!");
+      }
     }
+    navigate("/projects");
     setProjectData(initialProjectData);
   };
 
   return (
     <div className="container mx-auto px-6 py-7">
-      <h1 className="text-lg font-medium">Add Projects</h1>
+      <h1 className="text-lg font-medium">
+        {params.id ? "Edit Project" : "Add Project"}
+      </h1>
       <div>
         <form className="rounded px-8 pt-6 pb-8 w-full">
           <label className="block text-black text-sm font-bold mt-2">
@@ -155,7 +189,6 @@ const AddProjects = () => {
           </button>
         </form>
       </div>
-      <ToastContainer />
     </div>
   );
 };

@@ -1,18 +1,21 @@
-import React, { MouseEventHandler, useState } from "react";
+import React, { MouseEventHandler, useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { auth } from "../../firebase";
-import { createUserWithEmailAndPassword } from "firebase/auth";
+import { auth, db } from "../../firebase";
+import { createUserWithEmailAndPassword, getAuth } from "firebase/auth";
 import { toast, ToastContainer } from "react-toastify";
+import { addDoc, collection } from "firebase/firestore";
 
 interface SignupData {
   email: string;
   password: string;
+  role: string;
 }
 
 export default function Signup() {
   const [signupData, setSignupData] = useState<SignupData>({
     email: "",
     password: "",
+    role: "",
   });
   const [error, setError] = useState<string>("");
 
@@ -28,9 +31,15 @@ export default function Signup() {
         signupData.email,
         signupData.password
       )
-        .then((res) => {
+        .then(async (res) => {
+          await addDoc(collection(db, "users"), {
+            uid: res.user.uid,
+            email: res.user.email,
+            role: signupData.role,
+          });
+
           localStorage.setItem("token", res.user.refreshToken);
-          navigate("/technologies");
+          navigate("/");
         })
         .catch((error) => {
           toast.error(error.message);
@@ -41,10 +50,14 @@ export default function Signup() {
     setSignupData({
       email: "",
       password: "",
+      role: "",
     });
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
     const { name, value } = e.target;
     setSignupData({ ...signupData, [name]: value });
   };
@@ -107,13 +120,15 @@ export default function Signup() {
                       </label>
                       <select
                         className="border-0 px-3 py-3 placeholder-blueGray-300 text-blueGray-600 bg-white rounded text-sm shadow focus:outline-none focus:ring w-full ease-linear transition-all duration-150"
-                        placeholder="Password"
+                        placeholder="Role"
+                        name="role"
+                        onChange={handleInputChange}
                       >
                         <option selected disabled>
                           -- Choose Role --
                         </option>
-                        <option>Mentor</option>
-                        <option>Employee</option>
+                        <option value="mentor">Mentor</option>
+                        <option value="employee">Employee</option>
                       </select>
                     </div>
                     {error && <span className="text-red-500">{error}</span>}

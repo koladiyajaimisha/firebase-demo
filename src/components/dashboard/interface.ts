@@ -13,5 +13,14 @@ export interface IProjectData {
   endDate: string;
   members: string[];
   technologyStack: string[];
-  status:string
+  status: string;
+  createdBy?:string
+  id?:string
+}
+
+export interface IAuthUser {
+  email: string;
+  role: string;
+  uid: string;
+  id: string;
 }

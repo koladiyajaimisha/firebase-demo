@@ -5,7 +5,7 @@ import { Link } from "react-router-dom";
 export default function Sidebar() {
   const [collapseShow, setCollapseShow] = React.useState("hidden");
   return (
-    <>
+    <div className="md:w-64">
       <nav className="md:left-0 md:block md:fixed md:top-0 md:bottom-0 md:overflow-y-auto md:flex-row md:flex-nowrap md:overflow-hidden shadow-xl bg-white flex flex-wrap items-center justify-between relative md:w-64 z-10 py-4 px-6">
         <div className="md:flex-col md:items-stretch md:min-h-full md:flex-nowrap px-0 flex flex-wrap items-center justify-between w-full mx-auto">
           {/* Toggler */}
@@ -95,7 +95,7 @@ export default function Sidebar() {
                 <Link
                   className={
                     "text-xs uppercase py-3 font-bold block " +
-                    (window.location.href.indexOf("/projects") !== -1
+                    (window.location.href.indexOf("/projects/add") !== -1
                       ? "text-blue-500 hover:text-blue-600"
                       : "text-black hover:text-gray-500")
                   }
@@ -112,6 +112,27 @@ export default function Sidebar() {
                   Add Projects
                 </Link>
               </li>
+              <li className="items-center">
+                <Link
+                  className={
+                    "text-xs uppercase py-3 font-bold block " +
+                    (window.location.pathname == "/projects"
+                      ? "text-blue-500 hover:text-blue-600"
+                      : "text-black hover:text-gray-500")
+                  }
+                  to="/projects"
+                >
+                  <i
+                    className={
+                      "fas fa-project-diagram mr-2 text-sm " +
+                      (window.location.pathname == "/projects"
+                        ? "opacity-75"
+                        : "text-gray-400")
+                    }
+                  ></i>{" "}
+                  Projects
+                </Link>
+              </li>
             </ul>
 
             {/* Divider */}
@@ -119,6 +140,6 @@ export default function Sidebar() {
           </div>
         </div>
       </nav>
-    </>
+    </div>
   );
 }

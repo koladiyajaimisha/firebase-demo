@@ -5,10 +5,17 @@ import Login from "./components/auth/Login";
 import Register from "./components/auth/Signup";
 import Layout from "./layout/Layout";
 import Technologies from "./components/dashboard/technologies/Technologies";
-import { useAppSelector } from "./state/store";
-import { useDispatch } from "react-redux";
-import { setIsAuthenticated } from "./components/auth/redux/actions";
+import { useAppDispatch, useAppSelector } from "./state/store";
+import {
+  setAuthUser,
+  setIsAuthenticated,
+  setIsUserFetching,
+} from "./components/auth/redux/actions";
 import AddProjects from "./components/dashboard/projects/AddProjects";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
+import AllProjects from "./components/dashboard/projects/AllProjects";
+import { ToastContainer } from "react-toastify";
+import ProjectDetail from "./components/dashboard/projects/ProjectDetail";
 
 const ProtectedRoute = () => {
   const isAuthenticated = useAppSelector(
@@ -23,6 +30,23 @@ const ProtectedRoute = () => {
 };
 
 function App() {
+  const dispatch = useAppDispatch();
+  useEffect(() => {
+    dispatch(setIsUserFetching(true));
+    const auth = getAuth();
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        console.log(user.uid);
+
+        // User is signed in, see docs for a list of available properties
+        // https://firebase.google.com/docs/reference/js/firebase.User
+        dispatch(setAuthUser({ uid: user.uid }));
+      } else {
+        dispatch(setIsAuthenticated(false));
+      }
+    });
+  }, []);
+
   return (
     <div>
       <Routes>
@@ -32,9 +56,13 @@ function App() {
           <Route element={<Layout />}>
             <Route path="/technologies" element={<Technologies />} />
             <Route path="/projects/add" element={<AddProjects />} />
+            <Route path="/projects" element={<AllProjects />} />
+            <Route path="/project/:id" element={<ProjectDetail />} />
+            <Route path="/project/edit/:id" element={<AddProjects />} />
           </Route>
         </Route>
       </Routes>
+      <ToastContainer />
     </div>
   );
 }

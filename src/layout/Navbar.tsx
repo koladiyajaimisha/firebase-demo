@@ -1,6 +1,8 @@
+import { signOut } from "firebase/auth";
 import React from "react";
 import { useNavigate } from "react-router";
-import { setIsAuthenticated } from "../components/auth/redux/actions";
+import { resetAuth } from "../components/auth/redux/actions";
+import { auth } from "../firebase";
 import { useAppDispatch } from "../state/store";
 
 export default function Navbar() {
@@ -8,7 +10,8 @@ export default function Navbar() {
   const navigate = useNavigate();
 
   const onLogOut = () => {
-    dispatch(setIsAuthenticated(false));
+    signOut(auth)
+    dispatch(resetAuth());
     localStorage.removeItem("token");
     navigate("/");
   };
